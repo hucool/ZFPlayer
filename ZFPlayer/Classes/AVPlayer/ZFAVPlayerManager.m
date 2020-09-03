@@ -304,6 +304,7 @@ static NSString *const kPresentationSize         = @"presentationSize";
     if ([ZFReachabilityManager sharedManager].networkReachabilityStatus == ZFReachabilityStatusNotReachable) return;
     self.isBuffering = YES;
     
+    if (!self.isPlaying) return;
     // 需要先暂停一小会之后再播放，否则网络状况不好的时候时间在走，声音播放不出来
     [self.player pause];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -406,7 +407,10 @@ static NSString *const kPresentationSize         = @"presentationSize";
             // When the buffer is good
             if (self.playerItem.playbackLikelyToKeepUp) {
                 self.loadState = ZFPlayerLoadStatePlayable;
-                if (self.isPlaying) [self.player play];
+                if (self.isPlaying) {
+                    [self.player play];
+                    self.player.rate = self.rate;
+                } 
             }
         } else if ([keyPath isEqualToString:kLoadedTimeRanges]) {
             NSTimeInterval bufferTime = [self availableDuration];
